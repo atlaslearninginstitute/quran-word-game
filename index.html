@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quranic Words Journey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* palette modeled on quran.com: teal accent, white surfaces, hairline borders */
+  --bg:#e9f3f2; --card:#ffffff; --card2:#f4f8f8; --line:#dfe8e8;
+  --gold:#2ca4ab; --gold2:#14666c; --arab:#1f2937;
+  --ink:#1f2430; --mut:#6b7280;
+  --good:#1c8a55; --goodbg:#e9f7f0; --bad:#d64550; --badbg:#fdecee;
+  --teal:#2ca4ab; --star:#e3a008;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{
+  margin:0; font-family:'Inter',system-ui,sans-serif; color:var(--ink);
+  background:var(--bg);
+  min-height:100vh;
+}
+.ar{font-family:'Amiri',serif; direction:rtl}
+#wrap{max-width:560px; margin:0 auto; padding:0 14px 60px}
+header{
+  position:sticky; top:0; z-index:10; display:flex; justify-content:space-between; align-items:center;
+  padding:12px 4px; background:rgba(255,255,255,.96); backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);
+}
+header .brand{font-weight:800; font-size:15px; color:var(--gold2); letter-spacing:.4px}
+header .stats{display:flex; gap:8px; font-weight:800; font-size:13px}
+header .stats span{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--card); padding:5px 11px; border-radius:20px;
+  border:1px solid var(--line); box-shadow:0 1px 3px rgba(16,24,40,.07);
+}
+h1{font-size:22px; margin:20px 0 4px}
+.sub{color:var(--mut); font-size:14px; margin:0 0 18px; line-height:1.5}
+.cres-card{
+  background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:12px 16px; margin:0 0 14px; box-shadow:0 1px 3px rgba(16,24,40,.05);
+}
+.crescents{font-size:20px; letter-spacing:4px; color:var(--star); margin:4px 0 2px; min-height:26px}
+.cresbar{height:6px; background:#e5eaec; border-radius:3px; overflow:hidden; margin:7px 0 6px}
+.cresbar i{display:block; height:100%; background:var(--star); border-radius:3px}
+.cres-txt{font-size:12px; color:var(--mut)}
+
+/* map */
+.map{display:flex; flex-direction:column; gap:10px}
+.node{
+  display:flex; align-items:center; gap:14px; background:var(--card);
+  border:1px solid var(--line); border-radius:16px; padding:13px 16px; cursor:pointer;
+  transition:transform .12s, border-color .12s; box-shadow:0 1px 4px rgba(16,24,40,.07);
+}
+.node:not(.locked):hover{transform:translateX(4px); border-color:var(--gold)}
+.node.locked{opacity:.55; cursor:pointer; box-shadow:none}
+.node .num{
+  width:42px; height:42px; flex:0 0 42px; border-radius:50%;
+  background:var(--card2); border:2px solid var(--gold);
+  display:flex; align-items:center; justify-content:center; font-weight:800; color:var(--gold2);
+}
+.node.locked .num{border-color:#d3dadd; color:var(--mut)}
+.node.review .num{border-style:dashed}
+.node .info{flex:1}
+.node .t{font-weight:800; font-size:15px}
+.node .d{color:var(--mut); font-size:12.5px}
+.node .stars{font-size:13px; letter-spacing:1px; font-weight:800}
+.revbtn{
+  margin:16px 0 0; width:100%; background:#eef7f8;
+  border:1px solid var(--teal); color:var(--gold2); font-weight:700; font-size:15px;
+  padding:14px; border-radius:12px; cursor:pointer; font-family:inherit; transition:background .12s;
+}
+.revbtn:hover{background:#e2f1f2}
+.howto{
+  background:var(--card); border:1px solid var(--line); border-radius:12px;
+  padding:4px 18px 8px; margin:0 0 16px; font-size:13.5px; line-height:1.6;
+  box-shadow:0 1px 3px rgba(16,24,40,.05);
+}
+.howto summary{font-weight:700; cursor:pointer; color:var(--ink); font-size:14px; padding:11px 0}
+.howto summary::marker{color:var(--teal)}
+.hsec{padding:11px 0; border-top:1px solid var(--line)}
+.hlabel{
+  font-size:11px; letter-spacing:1.1px; text-transform:uppercase;
+  color:var(--gold2); font-weight:800; margin-bottom:4px;
+}
+.htxt{color:var(--ink)}
+.hpill{
+  display:inline-block; background:var(--card2); border:1px solid var(--teal);
+  color:var(--gold2); border-radius:16px; padding:1px 10px;
+  font-size:11.5px; font-weight:700; margin:5px 4px 1px 0;
+}
+.hsteps{display:flex; flex-wrap:wrap; gap:5px; margin:6px 0}
+.hsteps span{
+  background:var(--card2); border:1px solid var(--line); border-radius:8px;
+  padding:2px 10px; font-size:12px; font-weight:600; color:var(--ink);
+}
+
+/* generic */
+.btn{
+  display:inline-block; background:var(--teal); color:#ffffff;
+  font-weight:700; font-size:15px; border:none; border-radius:24px; padding:13px 28px;
+  cursor:pointer; font-family:inherit; margin-top:16px; box-shadow:0 1px 3px rgba(16,24,40,.15);
+  transition:background .12s;
+}
+.btn:hover{background:#238e94}
+.btn.ghost{background:var(--card); color:var(--ink); border:1px solid var(--line); box-shadow:none}
+.btn.ghost:hover{background:var(--card2)}
+.btn:disabled{opacity:.4; cursor:not-allowed}
+.topline{display:flex; align-items:center; justify-content:space-between; margin:18px 0 6px}
+.topline .back{
+  display:inline-flex; align-items:center; gap:6px; background:var(--card);
+  border:1px solid var(--line); border-radius:20px; padding:6px 14px;
+  color:var(--gold2); cursor:pointer; font-size:12.5px; font-weight:800;
+  box-shadow:0 1px 3px rgba(16,24,40,.06); transition:border-color .12s;
+}
+.topline .back:hover{border-color:var(--gold)}
+.steps-track{display:flex; gap:4px; margin:12px 0 2px}
+.stp{
+  flex:1; text-align:center; font-size:10.5px; font-weight:700; color:var(--mut);
+  padding:4px 1px; border-radius:8px; background:var(--card); border:1px solid var(--line);
+  white-space:nowrap; overflow:hidden;
+}
+.stp.done{color:var(--gold2); border-color:var(--teal); background:#eef7f8}
+.stp.cur{background:var(--teal); color:#ffffff; border-color:var(--teal)}
+.stage{color:var(--gold2); font-weight:800; font-size:13px; text-transform:uppercase; letter-spacing:1.5px; margin:14px 0 2px}
+.q{font-size:16.5px; font-weight:700; margin:8px 0 14px; line-height:1.5}
+
+/* flashcards */
+.fc{
+  background:var(--card); border:1px solid var(--line); border-radius:20px; padding:34px 20px;
+  text-align:center; cursor:pointer; min-height:210px; display:flex; flex-direction:column; justify-content:center;
+  box-shadow:0 2px 8px rgba(16,24,40,.09);
+}
+.fc .arw{font-size:46px; line-height:1.6; color:var(--arab)}
+.fc .mean{font-size:19px; font-weight:800; margin-top:8px}
+.fc .times{color:var(--mut); font-size:13px; margin-top:10px}
+.fc .hint{color:var(--mut); font-size:12.5px; margin-top:14px}
+.fcnav{display:flex; justify-content:space-between; align-items:center; margin-top:14px}
+.fcnav .cnt{color:var(--mut); font-weight:700}
+
+/* match */
+.mgrid{display:grid; grid-template-columns:1fr 1fr; gap:9px}
+.mcell{
+  background:var(--card); border:1px solid var(--line); border-radius:13px; padding:13px 8px;
+  text-align:center; cursor:pointer; font-weight:700; font-size:14.5px; min-height:58px;
+  display:flex; align-items:center; justify-content:center; transition:all .12s;
+  box-shadow:0 1px 3px rgba(16,24,40,.06);
+}
+.mcell.ar{font-size:24px; color:var(--arab)}
+.mcell.sel{border-color:var(--gold); background:var(--card2); transform:scale(.97)}
+.mcell.done{opacity:.15; pointer-events:none}
+.mcell.err{border-color:var(--bad); animation:shake .3s}
+
+/* choice */
+.opts{display:flex; flex-direction:column; gap:9px}
+.opt{
+  background:var(--card); border:1px solid var(--line); border-radius:13px; padding:14px 16px;
+  cursor:pointer; font-weight:700; font-size:15px; text-align:left; transition:all .12s; font-family:inherit; color:var(--ink);
+  box-shadow:0 1px 3px rgba(16,24,40,.06);
+}
+.opt.ar{text-align:right; font-size:26px; color:var(--arab)}
+.opt:hover{border-color:var(--gold)}
+.opt.good{border-color:var(--good); background:var(--goodbg)}
+.opt.bad{border-color:var(--bad); background:var(--badbg); animation:shake .3s}
+.bigar{font-size:44px; text-align:center; color:var(--arab); margin:6px 0 16px}
+.timerbar{height:6px; background:#e5eaec; border-radius:3px; margin:10px 0 16px; overflow:hidden}
+.timerbar i{display:block; height:100%; background:var(--teal); border-radius:3px}
+
+/* ayah builder */
+.slots,.pool{display:flex; flex-wrap:wrap; gap:8px; direction:rtl; justify-content:center}
+.slots{min-height:64px; background:var(--card2); border:1px dashed #c2ced2; border-radius:12px; padding:12px; margin-bottom:14px}
+.chip{
+  background:#eef7f8; border:1px solid var(--teal); color:var(--gold2);
+  border-radius:10px; padding:7px 13px; font-size:26px; cursor:pointer; font-family:'Amiri',serif;
+}
+.pool .chip{border-color:#ccd5d9; color:var(--arab); background:var(--card)}
+.ayah-res{margin-top:14px; padding:14px; border-radius:13px; font-size:15px; line-height:1.55}
+.ayah-res.good{background:var(--goodbg); border:1px solid var(--good)}
+.ayah-res.bad{background:var(--badbg); border:1px solid var(--bad)}
+.ref{color:var(--mut); font-size:12.5px}
+
+/* feedback + end */
+.float{
+  position:fixed; left:50%; transform:translateX(-50%); bottom:120px; font-weight:800;
+  font-size:20px; color:var(--gold2); pointer-events:none; animation:rise 1.1s forwards; z-index:50;
+}
+@keyframes rise{from{opacity:1; bottom:120px} to{opacity:0; bottom:200px}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.end{
+  text-align:center; background:var(--card); border:1px solid var(--gold); border-radius:22px; padding:36px 20px; margin-top:24px;
+  box-shadow:0 3px 12px rgba(16,24,40,.12);
+}
+.end .big{font-size:44px; letter-spacing:6px; color:var(--star)}
+.crescents{color:var(--star); font-size:22px}
+.end h2{margin:12px 0 4px}
+.end .gain{color:var(--gold2); font-weight:800; font-size:18px}
+.note{color:var(--mut); font-size:12px; margin-top:26px; line-height:1.6; text-align:center}
+.note a{color:var(--mut)}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <div class="brand">Quranic Words Journey</div>
+    <div class="stats"><span id="hThawab">Thawab: 0</span><span id="hStreak" title="Days in a row you have played">Day streak: 0</span></div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+"use strict";
+/* ================= DATA, from "Quranic Lessons 1 to 20" =================
+   Word tables per lesson: [Arabic, meaning, approx. times in Quran]      */
+const LESSONS=[
+{n:1,title:"First Words",words:[
+["اللّٰه","Allah (God)",2849],["عَلِيم","Knowing",855],["كُلّ","All, every",410],
+["شَيْء","Thing",283],["رَحْمٰن وَ رَحِيم","Beneficent and Merciful",326],["رَبّ","Lord",977],
+["هُوَ","He",477],["حَكِيم","Wise",209],["إِنَّ","Surely, verily",641],["عَزِيز","Honoured, Mighty",120]],
+ayat:[
+{a:["بِسْمِ","اللّٰهِ","الرَّحْمٰنِ","الرَّحِيمِ"],t:"In the name of Allah, the Beneficent, the Merciful",r:"1:1"},
+{a:["إِنَّ","اللّٰهَ","بِكُلِّ","شَيْءٍ","عَلِيمٌ"],t:"Surely Allah knows all things",r:"29:62"},
+{a:["وَهُوَ","الْعَزِيزُ","الْحَكِيمُ"],t:"And He is the Mighty, the Wise",r:"31:9"},
+{a:["وَهُوَ","بِكُلِّ","شَيْءٍ","عَلِيمٌ"],t:"And He knows all things",r:"2:29"},
+{a:["إِنَّ","رَبَّكَ","حَكِيمٌ","عَلِيمٌ"],t:"Surely your Lord is Wise, Knowing",r:"6:83"}]},
+
+{n:2,title:"Names of Allah",words:[
+["غَنِيّ","Self-sufficient",73],["حَلِيم","Forbearing",15],["عَالَمِين","Worlds",791],
+["كَرِيم","Glorious",47],["غَفُور","Forgiving",235],["بَصِير","Seeing",148]],
+ayat:[
+{a:["الْحَمْدُ","لِلّٰهِ","رَبِّ","الْعَالَمِينَ"],t:"Praise be to Allah, the Lord of the Worlds",r:"1:2"},
+{a:["إِنَّ","اللّٰهَ","غَفُورٌ","رَحِيمٌ"],t:"Surely Allah is Forgiving, Merciful",r:"2:173"},
+{a:["وَاللّٰهُ","غَنِيٌّ","حَلِيمٌ"],t:"And Allah is Self-sufficient, Forbearing",r:"2:263"},
+{a:["وَهُوَ","السَّمِيعُ","الْبَصِيرُ"],t:"And He is the Hearing, the Seeing",r:"42:11"},
+{a:["إِنَّهُ","هُوَ","الْغَفُورُ","الرَّحِيمُ"],t:"Surely He is the Forgiving, the Merciful",r:"12:98"}]},
+
+{n:3,title:"Power and Mercy",words:[
+["خَالِق","Creator",261],["خَبِير","Aware, well-informed",52],["رَؤُوف","Compassionate",13],
+["عَظِيم","Great, grievous",115],["عَذَاب","Chastisement, punishment",372],["قَدِير","Powerful, Able",132],
+["عَلَىٰ","Upon, for, at",1433],["أَنَا","I",65],["عَلِيّ","The Most High",70],["يَوْم","Day",490]],
+ayat:[
+{a:["إِنَّ","اللّٰهَ","عَلَىٰ","كُلِّ","شَيْءٍ","قَدِيرٌ"],t:"Surely Allah has power over all things",r:"2:20"},
+{a:["عَذَابُ","يَوْمٍ","عَظِيمٍ"],t:"(the) chastisement of a grievous day",r:"6:15"},
+{a:["وَهُوَ","الْعَلِيُّ","الْعَظِيمُ"],t:"And He is the Most High, the Great",r:"2:255"},
+{a:["سَبِّحِ","اسْمَ","رَبِّكَ","الْأَعْلَى"],t:"Glorify the name of your Lord, the Most High",r:"87:1"},
+{a:["إِنَّ","اللّٰهَ","بِالنَّاسِ","لَرَؤُوفٌ","رَحِيمٌ"],t:"Surely Allah is Compassionate and Merciful to mankind",r:"2:143"}]},
+
+{n:4,title:"Little Words, Big Doors",words:[
+["قَالَ","(He) said",1724],["إِلَىٰ","To, unto, until",741],["مَنْ","Who, whoever",853],
+["مِنْ","From, for, of, than",2840],["تَعْمَلُونَ","You (pl.) do",442],["مَا","What, no, none",2355],
+["يَعْلَمُ","He knows",855],["فِي","At, in",1660],["الَّذِينَ / الَّذِي","Who, which (plural / singular)",1450],["آمَنُوا","(They) believed",849]],
+ayat:[
+{a:["وَاللّٰهُ","بِمَا","تَعْمَلُونَ","خَبِيرٌ"],t:"And Allah is Aware of what you do",r:"2:234"},
+{a:["وَاللّٰهُ","بِمَا","تَعْمَلُونَ","بَصِيرٌ"],t:"And Allah sees what you do",r:"2:265"},
+{a:["يَا","أَيُّهَا","الَّذِينَ","آمَنُوا"],t:"O you who believe!",r:"2:153"},
+{a:["وَاللّٰهُ","يَعْلَمُ","وَأَنْتُمْ","لَا","تَعْلَمُونَ"],t:"Allah knows, and you do not know",r:"2:216"},
+{a:["إِنَّ","الَّذِينَ","آمَنُوا","وَعَمِلُوا","الصَّالِحَاتِ"],t:"Surely those who believe and do good deeds...",r:"2:277"}]},
+
+{n:5,title:"Review Checkpoint",words:[],review:true,ayat:[
+{a:["إِنَّ","اللّٰهَ","عَلَىٰ","كُلِّ","شَيْءٍ","شَهِيدٌ"],t:"Surely Allah is Witness over all things",r:"22:17"},
+{a:["إِنَّ","اللّٰهَ","سَمِيعٌ","عَلِيمٌ"],t:"Surely Allah is Hearing, Knowing",r:"2:181"},
+{a:["لِلّٰهِ","مَا","فِي","السَّمَاوَاتِ","وَمَا","فِي","الْأَرْضِ"],t:"To Allah belongs whatever is in the heavens and whatever is in the earth",r:"2:284"},
+{a:["وَهُوَ","عَلَىٰ","كُلِّ","شَيْءٍ","قَدِيرٌ"],t:"And He has power over all things",r:"67:1"}]},
+
+{n:6,title:"Key 1: Plurals",key:"If a word ends in ونَ or ينَ or ات, it is plural. Example: مُؤْمِن (believer) becomes مُؤْمِنُونَ (believers). This one rule unlocks about 3072 words of the Quran.",words:[
+["نَحْنُ","We",83],["هٰذَا / هٰذِهِ","This",273],["ـنَا","Ours, our (suffix)",null],
+["لَـ","Indeed, certainly (beginning of word)",null],["عَمِلُوا","They did",457],["كَفَرُوا","They covered (the truth), disbelieved",528],
+["هُمْ","They, their, them",null],["وَيْل","Woe! Oh!",40],["فَـ","Then, so (prefix)",null],["وَاحِد","One, unique",61]],
+ayat:[
+{a:["وَإِلٰهُكُمْ","إِلٰهٌ","وَاحِدٌ"],t:"And your God is one God",r:"2:163"},
+{a:["وَأَنَّ","اللّٰهَ","مَعَ","الْمُؤْمِنِينَ"],t:"and that Allah is with the believers",r:"8:19"},
+{a:["وَإِنَّهُ","لَهُدًى","وَرَحْمَةٌ","لِلْمُؤْمِنِينَ"],t:"and surely it is a guidance and a mercy for the believers",r:"27:77"},
+{a:["وَيْلٌ","يَوْمَئِذٍ","لِلْمُكَذِّبِينَ"],t:"Woe on that Day to the deniers!",r:"83:10"},
+{a:["هٰذَا","مِنْ","فَضْلِ","رَبِّي"],t:"This is from the grace of my Lord",r:"27:40"}]},
+
+{n:7,title:"Night and Day",words:[
+["مَبْعُوث","(To be) raised (after death)",65],["مَوْت","Death",166],["خَالِد","Eternal, abiding forever",87],
+["مَعَ","With",160],["مُحْسِن","Benefactor, good-doer",184],["لَيْل","Night",92],
+["نَهَار","Day(time)",57],["شَمْس","Sun",33],["قَمَر","Moon",27],["مُتَّقِين","Those who guard (against evil)",27]],
+ayat:[
+{a:["وَاللّٰهُ","يُحِبُّ","الْمُحْسِنِينَ"],t:"And Allah loves the good-doers",r:"3:148"},
+{a:["هُمْ","فِيهَا","خَالِدُونَ"],t:"they shall abide in it forever",r:"2:39"},
+{a:["إِنَّ","رَحْمَتَ","اللّٰهِ","قَرِيبٌ","مِنَ","الْمُحْسِنِينَ"],t:"Surely the mercy of Allah is near to the good-doers",r:"7:56"},
+{a:["وَالشَّمْسِ","وَضُحَاهَا"],t:"By the sun and its brightness!",r:"91:1"},
+{a:["إِنَّ","اللّٰهَ","يُحِبُّ","الْمُتَّقِينَ"],t:"Surely Allah loves those who guard (against evil)",r:"9:4"}]},
+
+{n:8,title:"Root Families",words:[
+["سِحْر","Magic (سَاحِر = magician)",60],["خَلَقَ","(He) created",261],["فَضَّلَ","He made (someone) excel; grace",104],
+["رَزَقَ / رِزْق","He gave sustenance; provision",124],["خُسْر","Loss (خَاسِر = loser)",65],["حَيَاة","Life",179],
+["لَعِب","Play, plaything",20],["لَهْو","Idle sport, diversion",16],["أَلَا","Beware! Behold!",54],["فَلَاح / مُفْلِح","Success / successful",40]],
+ayat:[
+{a:["اللّٰهُ","خَالِقُ","كُلِّ","شَيْءٍ"],t:"Allah is the Creator of all things",r:"39:62"},
+{a:["إِنَّمَا","الْحَيَاةُ","الدُّنْيَا","لَعِبٌ","وَلَهْوٌ"],t:"The life of this world is only play and idle sport",r:"47:36"},
+{a:["إِنَّ","الْإِنْسَانَ","لَفِي","خُسْرٍ"],t:"Surely man is in loss",r:"103:2"},
+{a:["فَتَبَارَكَ","اللّٰهُ","أَحْسَنُ","الْخَالِقِينَ"],t:"So blessed is Allah, the best of creators",r:"23:14"},
+{a:["وَاللّٰهُ","خَيْرُ","الرَّازِقِينَ"],t:"And Allah is the best of providers",r:"62:11"}]},
+
+{n:9,title:"Sent Down",words:[
+["يَا / يَا أَيُّهَا","O! (calling)",508],["نَاس","People, mankind",240],["أَنْزَلَ","(He) sent down, revealed",290],
+["مَاء","Water",63],["مُرْسَل","Has been sent; messenger",511],["جَمِيعًا","All, everyone",130],
+["أَحْيَا / أَحْيَاء","Gave life / alive",179],["سُبْحَانَ","Glory be to",89],["كَانُوا","Were, are",1388],["هِيَ / هَا","She, it (f.)",191]],
+ayat:[
+{a:["يَا","أَيُّهَا","النَّاسُ"],t:"O mankind!",r:"22:1"},
+{a:["وَأَنْزَلْنَا","مِنَ","السَّمَاءِ","مَاءً"],t:"And We sent down water from the sky",r:"23:18"},
+{a:["وَكَانَ","اللّٰهُ","عَلِيمًا","حَكِيمًا"],t:"and Allah is ever Knowing, Wise",r:"4:17"},
+{a:["وَجَعَلْنَا","مِنَ","الْمَاءِ","كُلَّ","شَيْءٍ","حَيٍّ"],t:"And We made from water every living thing",r:"21:30"},
+{a:["سُبْحَانَ","اللّٰهِ","عَمَّا","يُشْرِكُونَ"],t:"Glory be to Allah above what they associate (with Him)",r:"52:43"}]},
+
+{n:10,title:"Words of Same Weight",words:[
+["أَلِيم","Painful",75],["بَلْ","But, because",35],["دَخَلَ","(He) entered",126],
+["خَرَجَ","(He) went out",179],["إِذْ / إِذَا","When, while",694],["اِغْفِرْ / اِغْفِرْ لِي","Forgive! / Forgive me!",234],
+["مُبِين","Obvious, clear",257],["شِرْك","Associating (partners) with Allah",143],["ضَلَال","Error, going astray",190],["أَنْفُس","Lives, beings, souls",298]],
+ayat:[
+{a:["رَبِّ","اغْفِرْ","لِي"],t:"My Lord, forgive me!",r:"7:151"},
+{a:["إِنَّ","الشِّرْكَ","لَظُلْمٌ","عَظِيمٌ"],t:"Surely associating (others with Allah) is a grievous wrong",r:"31:13"},
+{a:["لَفِي","ضَلَالٍ","مُبِينٍ"],t:"...surely in clear error",r:"3:164"},
+{a:["فَادْخُلِي","فِي","عِبَادِي","وَادْخُلِي","جَنَّتِي"],t:"So enter among My servants, and enter My garden",r:"89:29-30"},
+{a:["وَقُلْ","رَبِّ","اغْفِرْ","وَارْحَمْ"],t:"And say: My Lord, forgive and have mercy",r:"23:118"}]},
+
+{n:11,title:"Weighing Words",words:[
+["جَعَلَ","Made, placed, set",348],["ظُلُمَات","Darknesses (pl. of ظُلْمَة)",26],["نُجُوم","Stars (pl. of نَجْم)",13],
+["إِلَّا","If, whether, except",615],["سَمِعَ / سَمِيع","To hear / one who hears",182],["أَبْصَار / بَصِير","Eyes (pl. of بَصَر) / seeing",146],
+["أَفْئِدَة","Hearts (pl. of فُؤَاد)",16],["خَيْر","Better, best; good",176],["أَلْف","One thousand",10],["شَهْر","Month",21]],
+ayat:[
+{a:["لَيْلَةُ","الْقَدْرِ","خَيْرٌ","مِنْ","أَلْفِ","شَهْرٍ"],t:"The Night of Power is better than a thousand months",r:"97:3"},
+{a:["وَجَعَلَ","الظُّلُمَاتِ","وَالنُّورَ"],t:"and He made the darknesses and the light",r:"6:1"},
+{a:["وَاللّٰهُ","سَمِيعٌ","عَلِيمٌ"],t:"And Allah is Hearing, Knowing",r:"2:224"},
+{a:["وَجَعَلْنَا","اللَّيْلَ","وَالنَّهَارَ","آيَتَيْنِ"],t:"And We made the night and the day two signs",r:"17:12"},
+{a:["وَجَعَلَ","لَكُمُ","السَّمْعَ","وَالْأَبْصَارَ","وَالْأَفْئِدَةَ"],t:"and He made for you hearing and sight and hearts",r:"16:78"}]},
+
+{n:12,title:"Review Checkpoint",words:[],review:true,ayat:[
+{a:["أَلَا","إِنَّ","أَوْلِيَاءَ","اللّٰهِ","لَا","خَوْفٌ","عَلَيْهِمْ","وَلَا","هُمْ","يَحْزَنُونَ"],t:"Beware! Surely the friends of Allah, no fear shall be upon them, nor shall they grieve",r:"10:62"},
+{a:["رَحْمَتُ","اللّٰهِ","وَبَرَكَاتُهُ","عَلَيْكُمْ","أَهْلَ","الْبَيْتِ"],t:"The mercy of Allah and His blessings be on you, O people of the house",r:"11:73"},
+{a:["إِنَّ","اللّٰهَ","يُحِبُّ","الْمُحْسِنِينَ"],t:"Surely Allah loves the good-doers",r:"2:195"},
+{a:["وَاللّٰهُ","عَلِيمٌ","بِالظَّالِمِينَ"],t:"And Allah knows the unjust",r:"2:95"}]},
+
+{n:13,title:"Key 2: The Doer (فَاعِل)",key:"Any word shaped like فَاعِل names the doer of an action, or the owner of something. Example: خَالِق means the one who creates. This key unlocks about 873 words of the Quran.",words:[
+["أَنْتَ","You (singular)",78],["كِذْب","Lie, falsehood",249],["مَوْلَى","Friend, guardian",241],
+["نَصْر","To help, help",159],["مُنَافِق","Hypocrite",111],["لِقَاء","Meeting",137],
+["كَثِير","Many, numerous",156],["كَظْم الْغَيْظ","Restraining the anger",6],
+["عَافِين","Forgivers, pardoners",11],["نِعْمَ","It is good!",16],["بِئْسَ","It is bad!",16]],
+ayat:[
+{a:["بَلِ","اللّٰهُ","مَوْلَاكُمْ","وَهُوَ","خَيْرُ","النَّاصِرِينَ"],t:"Nay! Allah is your Master, and He is the best of helpers",r:"3:150"},
+{a:["وَالْكَاظِمِينَ","الْغَيْظَ","وَالْعَافِينَ","عَنِ","النَّاسِ"],t:"...and those who restrain (their) anger and pardon people",r:"3:134"},
+{a:["نِعْمَ","الْمَوْلَىٰ","وَنِعْمَ","النَّصِيرُ"],t:"An excellent Master and an excellent Helper!",r:"8:40"},
+{a:["أَنْتَ","وَلِيُّنَا","فَاغْفِرْ","لَنَا","وَارْحَمْنَا"],t:"You are our Guardian, so forgive us and have mercy on us",r:"7:155"}]},
+
+{n:14,title:"Doers Everywhere",words:[
+["أُولٰئِكَ","They, those",206],["مَأْوَى","Place, abode",36],["نَار","Fire",193],
+["أَشَدّ","More intense, stronger",103],["غَلَبَ","(He) conquered",31],["فَاسِق","Evil-doer, impious",53],
+["فَطَرَ","(He) originated, created",17],["رَجَعَ","(He) returned",103],["عَدُوّ","Enemy (عَدَاوَة = hostility)",105],["أَ","(Question prefix) Is? Do?",93]],
+ayat:[
+{a:["وَاللّٰهُ","لَا","يُحِبُّ","الظَّالِمِينَ"],t:"And Allah does not love the unjust",r:"3:57"},
+{a:["إِنَّ","اللّٰهَ","مَعَ","الصَّابِرِينَ"],t:"Surely Allah is with the patient",r:"2:153"},
+{a:["فَاطِرِ","السَّمَاوَاتِ","وَالْأَرْضِ"],t:"...Originator of the heavens and the earth",r:"12:101"},
+{a:["وَأُولٰئِكَ","هُمُ","الْمُفْلِحُونَ"],t:"...and it is they who are the successful",r:"2:5"},
+{a:["إِنَّ","الشَّيْطَانَ","لَكُمْ","عَدُوٌّ"],t:"Surely Satan is an enemy to you",r:"35:6"}]},
+
+{n:15,title:"Key 3: Doers with مُـ",key:"A word that starts with مُـ and has a kasrah (an 'i' sound) before its last letter also names the doer. Example: مُجَاهِد means one who strives. Found about 1188 times in the Quran.",words:[
+["هُدًى","Guidance",313],["صَلَاة","Prayer",99],["خُشُوع / خَشَعَ","Humility / he was humble",17],
+["لَغْو","Vain, idle talk",11],["إِعْرَاض","Turning away",79],["فَعَلَ","He did",108],
+["إِضْلَال","Leading into error",190],["تَبْذِير","Squandering",3],["أَسْلَمَ","He submitted",138]],
+ayat:[
+{a:["قَدْ","أَفْلَحَ","الْمُؤْمِنُونَ"],t:"Successful indeed are the believers",r:"23:1"},
+{a:["إِنَّمَا","الْمُؤْمِنُونَ","إِخْوَةٌ"],t:"The believers are but brothers",r:"49:10"},
+{a:["وَنَحْنُ","لَهُ","مُسْلِمُونَ"],t:"and to Him do we submit",r:"2:136"},
+{a:["ذٰلِكَ","الْكِتَابُ","لَا","رَيْبَ","فِيهِ","هُدًى","لِلْمُتَّقِينَ"],t:"That is the Book, there is no doubt in it, a guidance for those who guard (against evil)",r:"2:2"},
+{a:["وَأَقِيمُوا","الصَّلَاةَ","وَآتُوا","الزَّكَاةَ"],t:"And keep up prayer and give the zakat",r:"2:43"}]},
+
+{n:16,title:"Practice the Keys",words:[
+["أَنْتُمْ","You (plural)",129],["أَكْثَر","Most of, majority",159],["قُعُود","To sit, sitting",31],
+["تَعَمُّد","Purposely, intentionally",7],["جَزَاء","Reward",99],["اِقْتِدَار","Power",130],
+["فَانْظُرْ","So look! Then look!",130],["كَيْفَ","How",83],["يُضِيعُ","(He) wastes",10],["يَقْتُلُ","(He) kills",170]],
+ayat:[
+{a:["إِنَّ","اللّٰهَ","لَا","يُضِيعُ","أَجْرَ","الْمُحْسِنِينَ"],t:"Surely Allah does not waste the reward of the good-doers",r:"9:120"},
+{a:["أَفَنَجْعَلُ","الْمُسْلِمِينَ","كَالْمُجْرِمِينَ"],t:"Shall We then treat those who submit like the guilty?",r:"68:35"},
+{a:["وَاللّٰهُ","يَشْهَدُ","إِنَّ","الْمُنَافِقِينَ","لَكَاذِبُونَ"],t:"And Allah bears witness that the hypocrites are surely liars",r:"63:1"},
+{a:["وَلٰكِنَّ","أَكْثَرَ","النَّاسِ","لَا","يَعْلَمُونَ"],t:"...but most people do not know",r:"7:187"},
+{a:["فَانْظُرْ","كَيْفَ","كَانَ","عَاقِبَةُ","الظَّالِمِينَ"],t:"So look how was the end of the unjust",r:"10:39"}]},
+
+{n:17,title:"Key 4: The Object (مَفْعُول)",key:"Any word shaped like مَفْعُول names the object, the one acted upon. Example: مَكْتُوب means written. This key unlocks another large family of Quran words.",words:[
+["أَمْوَال","Properties, wealth",86],["مَجْمُوع","Gathered",130],["سَائِل","Beggar, one who asks",129],
+["مَسْئُول","Questioned, demanded one",129],["مِنَّا","From us",35],["جَعَلْنَا","We placed, We made",164],
+["عَهْد","Promise, agreement",46],["مِيقَات","Fixed time, appointed term",11],["مَقَام","Position, rank, place",327],["مَحْرُوم","Deprived, denied (good)",83]],
+ayat:[
+{a:["كُلُّ","نَفْسٍ","ذَائِقَةُ","الْمَوْتِ"],t:"Every soul must taste death",r:"3:185"},
+{a:["بَلْ","هُوَ","قُرْآنٌ","مَجِيدٌ","فِي","لَوْحٍ","مَحْفُوظٍ"],t:"Nay! It is a glorious Quran, in a guarded tablet",r:"85:21-22"},
+{a:["وَكَانَ","اللّٰهُ","بِكُلِّ","شَيْءٍ","مُحِيطًا"],t:"and Allah encompasses all things",r:"4:126"},
+{a:["وَكَانَ","عَهْدُ","اللّٰهِ","مَسْؤُولًا"],t:"and the promise of Allah shall be asked about",r:"33:15"},
+{a:["عَسَىٰ","أَنْ","يَبْعَثَكَ","رَبُّكَ","مَقَامًا","مَحْمُودًا"],t:"It may be that your Lord will raise you to a praised position",r:"17:79"}]},
+
+{n:18,title:"Objects Everywhere",words:[
+["ضَعِيف","Weak (ضَعُفَ = he was weak)",52],["فَجْر","Dawn; split",24],["وَ","And; by...! (oath)",null],
+["مَغْضُوب","Object of anger",29],["مَرْفُوع","Elevated, raised",29],["مَفْعُول","Done",108],
+["بَيْت","House, home",73],["مَعْمُور","Inhabited (place)",27],["مَسْرُور","Glad, joyful",11],["مَوْعُود","Promised",149]],
+ayat:[
+{a:["وَالْفَجْرِ","وَلَيَالٍ","عَشْرٍ"],t:"By the dawn, and the ten nights!",r:"89:1-2"},
+{a:["وَالْبَيْتِ","الْمَعْمُورِ"],t:"By the inhabited House!",r:"52:4"},
+{a:["غَيْرِ","الْمَغْضُوبِ","عَلَيْهِمْ"],t:"...not of those upon whom is (Your) wrath",r:"1:7"},
+{a:["وَخُلِقَ","الْإِنْسَانُ","ضَعِيفًا"],t:"and man was created weak",r:"4:28"},
+{a:["ذٰلِكَ","يَوْمٌ","مَجْمُوعٌ","لَهُ","النَّاسُ","وَذٰلِكَ","يَوْمٌ","مَشْهُودٌ"],t:"That is a day on which mankind shall be gathered, and that is a day that shall be witnessed",r:"11:103"}]},
+
+{n:19,title:"Key 5: Objects with مُـ",key:"A word that starts with مُـ and has a fatha (an 'a' sound) before its last letter is also an object, something acted upon. Example: مُبَارَك means blessed. About 310 words of the Quran follow this pattern.",words:[
+["مُبَارَك","(Has been) blessed",null],["مُحَمَّد","(Has been) praised; Muhammad",null],["مُحْضَر","(Has been) presented",null],
+["مُسَخَّر","(Has been) conquered, made subservient",null],["مُفَصَّل","(Has been) detailed",null],["مُخْلَص","(Has been) devoted, purified",null],
+["مُقَرَّب","(Brought) near",null],["مُجْتَمَع","(Has been) gathered",null],["مُعَذَّب","(To be) chastised",null],["مُطَهَّر","(Has been) cleaned, purified",null]],
+ayat:[
+{a:["مُحَمَّدٌ","رَسُولُ","اللّٰهِ"],t:"Muhammad is the Messenger of Allah",r:"48:29"},
+{a:["وَإِنَّ","يُونُسَ","لَمِنَ","الْمُرْسَلِينَ"],t:"And Yunus was surely one of the messengers",r:"37:139"},
+{a:["إِنَّهُ","كَانَ","مِنْ","عِبَادِنَا","الْمُخْلَصِينَ"],t:"Surely he was one of Our sincere (purified) servants",r:"12:24"},
+{a:["كِتَابٌ","أَنْزَلْنَاهُ","إِلَيْكَ","مُبَارَكٌ"],t:"A Book We have sent down to you, blessed",r:"38:29"},
+{a:["فِي","صُحُفٍ","مُكَرَّمَةٍ","مَرْفُوعَةٍ","مُطَهَّرَةٍ"],t:"In honoured pages, exalted, purified",r:"80:13-14"}]},
+
+{n:20,title:"The Final Gate",words:[
+["وَجِيه","Worthy of regard, eminent",78],["مُغْرَق","Drowned",23],["أَمَّا","But, as for",null],
+["كَذَّبُوا","(They) rejected, denied",249],["مُحْضَر","Present",21],["سَحَاب","Cloud",11],
+["يَعْقِلُونَ","They think, they understand",49],["مُكْرَم","Respected, honoured",55],["مَجْنُون","Mad, foolish",50],["نَعَمْ","Yes",4]],
+ayat:[
+{a:["فَكَانَ","مِنَ","الْمُغْرَقِينَ"],t:"...so he was among the drowned",r:"11:43"},
+{a:["أَفَلَا","تَعْقِلُونَ"],t:"Will you not then understand?",r:"2:44"},
+{a:["فَكَذَّبُوهُمَا","فَكَانُوا","مِنَ","الْمُهْلَكِينَ"],t:"So they rejected them both and became of those who were destroyed",r:"23:48"},
+{a:["إِنَّهُمْ","كَانُوا","قَوْمًا","فَاسِقِينَ"],t:"Surely they were a transgressing people",r:"43:54"},
+{a:["إِنَّ","فِي","ذٰلِكَ","لَآيَاتٍ","لِقَوْمٍ","يَعْقِلُونَ"],t:"Surely in that are signs for a people who understand",r:"13:4"}]}
+];
+
+/* ================= STATE ================= */
+const KEY="qwg-save-v1";
+let S=null;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S) S={thawab:0,stars:{},words:{},lastDay:null,dayStreak:0};
+function save(){localStorage.setItem(KEY,JSON.stringify(S))}
+function today(){return new Date().toISOString().slice(0,10)}
+(function daily(){
+  const t=today();
+  if(S.lastDay!==t){
+    const y=new Date(Date.now()-864e5).toISOString().slice(0,10);
+    S.dayStreak=(S.lastDay===y)?S.dayStreak+1:1;
+    S.lastDay=t; save();
+  }
+})();
+
+/* ================= HELPERS ================= */
+const app=document.getElementById("app");
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const ICON_STAR='<svg width="13" height="13" viewBox="0 0 24 24" fill="#e3a008" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>';
+const ICON_CAL='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2ca4ab" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M9 15.5l2 2 3.5-3.5"/></svg>';
+function header(){
+  document.getElementById("hThawab").innerHTML=ICON_STAR+"Thawab: "+S.thawab;
+  document.getElementById("hStreak").innerHTML=ICON_CAL+"Day streak: "+S.dayStreak;
+}
+function gain(n,msg){
+  S.thawab+=n; save(); header();
+  const el=document.createElement("div"); el.className="float";
+  el.textContent=(msg||"")+" +"+n+" thawab"; document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1100);
+}
+function wordStat(ar){ if(!S.words[ar]) S.words[ar]={c:0,w:0}; return S.words[ar]; }
+function markWord(ar,ok){ const st=wordStat(ar); ok?st.c++:st.w++; save(); }
+function unlockedUpTo(){ let m=1; for(let i=1;i<=20;i++){ if(S.stars[i]) m=i+1; else break; } m=Math.min(m,20); return Math.max(m, S.unlockedTo||1); }
+function poolUpTo(n){ let p=[]; LESSONS.forEach(L=>{ if(L.n<=n) p=p.concat(L.words); }); return p; }
+
+/* Session for a lesson run */
+let sess=null;
+
+/* ================= MAP ================= */
+function renderMap(){
+  header();
+  const maxOpen=unlockedUpTo();
+  const lit=Math.min(12,Math.floor(S.thawab/500));
+  const into=S.thawab%500, pct=Math.round(into/5);
+  const QURAN_WORDS=77000;
+  const occ=LESSONS.filter(L=>S.stars[L.n]||L.n<(S.unlockedTo||1))
+    .reduce((s,L)=>s+L.words.reduce((a,w)=>a+(w[2]||0),0),0);
+  const covPct=Math.min(100,occ/QURAN_WORDS*100);
+  const covText=occ>0
+    ? `The words you have studied appear about ${occ.toLocaleString()} times across the Quran's ~77,000 words. You will recognise roughly 1 in every ${Math.max(2,Math.round(QURAN_WORDS/occ))} words you read.`
+    : `Finish your first lesson and this bar will show how much of the Quran's text is made of words you have studied.`;
+  let h=`<h1>The Journey · رحلة الكلمات</h1>
+  <p class="sub">Learn the words of the Quran lesson by lesson. Earn <b style="color:var(--gold2)">thawab</b> for every word you master.</p>
+  <div class="cres-card">
+    <div class="hlabel">Quran word coverage</div>
+    <div style="font-size:24px; font-weight:800; color:var(--gold2); margin:2px 0">${covPct.toFixed(1)}%</div>
+    <div class="cresbar"><i style="width:${covPct}%; background:var(--teal)"></i></div>
+    <div class="cres-txt">${covText}</div>
+    <div class="cres-txt" style="margin-top:4px; font-style:italic">This measures how often your words appear, not full understanding of the verses.</div>
+  </div>
+  <div class="cres-card">
+    <div class="hlabel">Crescents · one for every 500 thawab</div>
+    <div class="crescents">${lit? "☾ ".repeat(lit).trim() : "<span style='color:var(--mut);font-size:13px;letter-spacing:normal'>None yet</span>"}</div>
+    <div class="cresbar"><i style="width:${pct}%"></i></div>
+    <div class="cres-txt">${into} / 500 thawab toward your ${lit?"next":"first"} crescent</div>
+  </div>
+  <details class="howto"><summary>How the game works</summary>
+    <div class="hsec"><div class="hlabel">Lesson flow · 7 stages</div><div class="htxt">
+      <div class="hsteps"><span>1. Learn</span><span>2. Match</span><span>3. Quiz</span><span>4. Read</span><span>5. Fill</span><span>6. Build</span><span>7. Boss</span></div>
+      Learn the new words, match the pairs, then a quiz. Next come three ayat games: Read (guess the ayah's meaning), Fill (complete its missing word using the surah and verse reference) and Build (arrange the scrambled words). The Boss Round is timed and brings back earlier words. Key lessons (6, 13, 15, 17, 19) open with an extra card explaining that lesson's grammar key, and checkpoint lessons (5, 12) replace stages 1 to 3 with one review quiz.</div></div>
+    <div class="hsec"><div class="hlabel">Thawab points</div><div class="htxt">
+      Matched pair 5 · quiz answer 10 · boss answer 10 · ayah built on the first try 25.<br>
+      <span class="hpill">3 correct in a row: points double</span><span class="hpill">6 in a row: points triple</span><br>
+      Wrong answers earn nothing, but never take points away.</div></div>
+    <div class="hsec"><div class="hlabel">Stars</div><div class="htxt">
+      ★ finish a lesson · ★★ three mistakes or fewer · ★★★ no mistakes and a perfect Boss Round. Replay any lesson to improve its rating.</div></div>
+    <div class="hsec"><div class="hlabel">Crescents</div><div class="htxt">
+      One crescent lights at the top of the map for every 500 total thawab.</div></div>
+    <div class="hsec"><div class="hlabel">Daily revision and streak</div><div class="htxt">
+      Revision retests the words you get wrong most often. Playing every day grows your day streak.</div></div>
+    <div class="hsec"><div class="hlabel">Skip ahead</div><div class="htxt">
+      Already studied the earlier lessons? Select a locked lesson and pass a short test to unlock up to it.</div></div>
+    <div class="hsec"><div class="hlabel">Saving</div><div class="htxt">
+      Progress is stored in this browser on this device.</div></div>
+  </details>`;
+  if(Object.keys(S.stars).length||(S.unlockedTo||1)>1) h+=`<button class="revbtn" onclick="startRevision()">Daily Revision: practice your weakest words</button><div style="height:14px"></div>`;
+  h+=`<div class="map">`;
+  LESSONS.forEach(L=>{
+    const open=L.n<=maxOpen, st=S.stars[L.n]||0;
+    const stars=st? `<span style="color:var(--star)">${"★".repeat(st)}</span>` : (open?"Play":"Locked");
+    const d=L.review? "Checkpoint: review quiz and ayat games" : L.words.length+" new words · match · quiz · ayat games";
+    h+=`<div class="node ${open?"":"locked"} ${L.review?"review":""}" onclick="${open?`startLesson(${L.n})`:`startUnlockTest(${L.n})`}">
+      <div class="num">${L.n}</div>
+      <div class="info"><div class="t">${esc(L.title)}</div><div class="d">${d}</div></div>
+      <div class="stars" style="color:var(--gold2)">${stars}</div></div>`;
+  });
+  h+=`</div><p class="note">Based on the book "Quranic Lessons 1 to 20". Your progress is saved on this device only.
+  <br><a href="#" onclick="if(confirm('Reset all progress?')){localStorage.removeItem('${KEY}');location.reload()}return false">Reset progress</a></p>`;
+  app.innerHTML=h; window.scrollTo(0,0);
+}
+
+/* ================= LESSON FLOW ================= */
+function startLesson(n){
+  const L=LESSONS[n-1];
+  const steps=[];
+  if(L.key) steps.push({name:"Key",run:()=>stepKeyIntro(L)});
+  if(L.words.length){
+    steps.push({name:"Learn",run:()=>stepLearn(L)});
+    steps.push({name:"Match",run:()=>stepMatch(L)});
+    steps.push({name:"Quiz",run:()=>stepChoose(L)});
+  } else {
+    steps.push({name:"Review",run:()=>stepReviewQuiz(L)});
+  }
+  if(L.ayat&&L.ayat.length){
+    steps.push({name:"Read",run:()=>stepAyahRead(L)});
+    steps.push({name:"Fill",run:()=>stepAyahBlank(L)});
+    steps.push({name:"Build",run:()=>stepAyah(L)});
+  }
+  steps.push({name:"Boss",run:()=>stepBoss(L)});
+  sess={L,steps,idx:0,mistakes:0,earned:0,streak:0};
+  nextStep();
+}
+function nextStep(){
+  if(sess.idx>=sess.steps.length){ finishLesson(); return; }
+  sess.steps[sess.idx++].run();
+}
+function topbar(stage){
+  const cur=sess.idx-1;
+  const track=sess.steps.map((s,i)=>
+    `<span class="stp ${i<cur?"done":""} ${i===cur?"cur":""}">${i<cur?"✓ ":""}${s.name}</span>`).join("");
+  return `<div class="topline"><span class="back" onclick="renderMap()">← Back to Map</span><span style="color:var(--mut);font-size:12px;font-weight:700">Stage ${cur+1} of ${sess.steps.length}</span></div>
+  <div class="steps-track">${track}</div>
+  <div class="stage">Lesson ${sess.L.n} · ${stage}</div>`;
+}
+function award(n,msg){ sess.earned+=n; gain(n,msg); }
+function miss(ar){ sess.mistakes++; sess.streak=0; if(ar) markWord(ar,false); }
+function hit(ar,base,msg){
+  sess.streak++;
+  const mult=sess.streak>=6?3:sess.streak>=3?2:1;
+  if(ar) markWord(ar,true);
+  award(base*mult, mult>1?("x"+mult+" in a row!"):msg||"");
+}
+
+/* ---- 0. KEY INTRO (the book's "Keys of Understanding the Quran") ---- */
+function stepKeyIntro(L){
+  app.innerHTML=topbar("The Key for this lesson")+`
+  <div class="fc" style="cursor:default">
+    <div class="hlabel" style="letter-spacing:2px">Key of Understanding</div>
+    <div class="mean" style="margin-top:10px; font-size:16.5px; line-height:1.7">${esc(L.key)}</div>
+    <div class="hint" style="margin-top:14px">The book calls these rules the "Keys of Understanding the Quran". This whole lesson practises this key.</div>
+  </div>
+  <div style="text-align:center"><button class="btn" id="go">Got it ➜</button></div>`;
+  document.getElementById("go").onclick=nextStep;
+  window.scrollTo(0,0);
+}
+
+/* ---- 1. LEARN (flashcards) ---- */
+function stepLearn(L){
+  let i=0, flipped=false;
+  function draw(){
+    const w=L.words[i];
+    app.innerHTML=topbar("Learn: tap the card to flip it")+`
+    <div class="fc" id="fc">
+      <div class="arw ar">${esc(w[0])}</div>
+      ${flipped?`<div class="mean">${esc(w[1])}</div>
+        <div class="times">${w[2]?("appears about "+w[2]+" times in the Quran"):""}</div>`
+        :`<div class="hint">tap to reveal meaning</div>`}
+    </div>
+    <div class="fcnav">
+      <button class="btn ghost" id="pv" ${i===0?"disabled":""}>‹ Back</button>
+      <span class="cnt">${i+1} / ${L.words.length}</span>
+      <button class="btn" id="nx">${i===L.words.length-1?"Start games ➜":"Next ›"}</button>
+    </div>`;
+    document.getElementById("fc").onclick=()=>{flipped=!flipped;draw()};
+    document.getElementById("pv").onclick=()=>{i--;flipped=false;draw()};
+    document.getElementById("nx").onclick=()=>{ if(i===L.words.length-1){nextStep()} else {i++;flipped=false;draw()} };
+    window.scrollTo(0,0);
+  }
+  draw();
+}
+
+/* ---- 2. MATCH (pairs) ---- */
+function stepMatch(L){
+  const groups=[]; const ws=shuffle(L.words);
+  for(let i=0;i<ws.length;i+=5) groups.push(ws.slice(i,i+5));
+  let g=0;
+  function round(){
+    if(g>=groups.length){ nextStep(); return; }
+    const pairs=groups[g]; g++;
+    if(pairs.length<2){ round(); return; }
+    const left=shuffle(pairs.map(p=>({k:p[0],txt:p[0],ar:true})));
+    const right=shuffle(pairs.map(p=>({k:p[0],txt:p[1],ar:false})));
+    let sel=null, done=0;
+    app.innerHTML=topbar("Match the pairs")+`
+      <p class="q">Tap an Arabic word, then its meaning.</p><div class="mgrid" id="mg"></div>`;
+    const mg=document.getElementById("mg");
+    for(let i=0;i<pairs.length;i++){
+      [left[i],right[i]].forEach(it=>{
+        const c=document.createElement("div");
+        c.className="mcell"+(it.ar?" ar":""); c.textContent=it.txt; c.dataset.k=it.k; c.dataset.side=it.ar?"a":"m";
+        c.onclick=()=>{
+          if(c.classList.contains("done"))return;
+          if(sel===c){c.classList.remove("sel");sel=null;return;}
+          if(!sel){sel=c;c.classList.add("sel");return;}
+          if(sel.dataset.side===c.dataset.side){sel.classList.remove("sel");sel=c;c.classList.add("sel");return;}
+          if(sel.dataset.k===c.dataset.k){
+            sel.classList.add("done");c.classList.add("done");sel.classList.remove("sel");sel=null;
+            hit(c.dataset.k,5); done++;
+            if(done===pairs.length) setTimeout(round,450);
+          }else{
+            c.classList.add("err");sel.classList.add("err");miss(sel.dataset.side==="a"?sel.dataset.k:c.dataset.k);
+            const s=sel; sel=null;
+            setTimeout(()=>{c.classList.remove("err","sel");s.classList.remove("err","sel")},380);
+          }
+        };
+        mg.appendChild(c);
+      });
+    }
+    window.scrollTo(0,0);
+  }
+  round();
+}
+
+/* ---- MCQ engine ---- */
+function mcq(container,word,dirAr2En,pool,onDone,timed){
+  const correct=word, others=shuffle(pool.filter(w=>w[0]!==word[0])).slice(0,3);
+  const opts=shuffle([correct].concat(others));
+  let t=null;
+  let h=timed?`<div class="timerbar"><i id="tb" style="width:100%"></i></div>`:"";
+  if(dirAr2En){
+    h+=`<div class="bigar ar">${esc(word[0])}</div><p class="q" style="text-align:center">What does this mean?</p><div class="opts">`;
+    opts.forEach((o,i)=>h+=`<button class="opt" data-i="${i}">${esc(o[1])}</button>`);
+  }else{
+    h+=`<p class="q" style="text-align:center">Which word means:<br><b style="color:var(--gold2)">${esc(word[1])}</b></p><div class="opts">`;
+    opts.forEach((o,i)=>h+=`<button class="opt ar" data-i="${i}">${esc(o[0])}</button>`);
+  }
+  h+=`</div>`;
+  container.innerHTML=h;
+  let answered=false;
+  function finish(ok){
+    if(answered)return; answered=true; if(t)clearInterval(t);
+    container.querySelectorAll(".opt").forEach(b=>{
+      const o=opts[+b.dataset.i];
+      if(o[0]===correct[0]) b.classList.add("good");
+      b.style.pointerEvents="none";
+    });
+    setTimeout(()=>onDone(ok),700);
+  }
+  container.querySelectorAll(".opt").forEach(b=>{
+    b.onclick=()=>{
+      const o=opts[+b.dataset.i];
+      if(o[0]===correct[0]){ hit(correct[0],10); }
+      else { b.classList.add("bad"); miss(correct[0]); }
+      finish(o[0]===correct[0]);
+    };
+  });
+  if(timed){
+    const bar=container.querySelector("#tb"); let w=100;
+    t=setInterval(()=>{ w-=1.25; bar.style.width=Math.max(0,w)+"%";
+      if(w<=0){ miss(correct[0]); finish(false); } },150);
+  }
+}
+
+/* ---- 3. CHOOSE (quiz both directions) ---- */
+function stepChoose(L){
+  const qs=shuffle(L.words).map((w,i)=>({w,d:i%2===0}));
+  let i=0;
+  function next(){
+    if(i>=qs.length){ nextStep(); return; }
+    const q=qs[i++];
+    app.innerHTML=topbar(`Quiz question ${i} of ${qs.length}`)+`<div id="qq"></div>`;
+    mcq(document.getElementById("qq"),q.w,q.d,poolUpTo(L.n),()=>next(),false);
+    window.scrollTo(0,0);
+  }
+  next();
+}
+
+/* ---- review quiz for checkpoint lessons ---- */
+function stepReviewQuiz(L){
+  const pool=poolUpTo(L.n-1);
+  const qs=shuffle(pool).slice(0,12).map((w,i)=>({w,d:i%2===0}));
+  let i=0;
+  function next(){
+    if(i>=qs.length){ nextStep(); return; }
+    const q=qs[i++];
+    app.innerHTML=topbar(`Review question ${i} of ${qs.length}`)+`<div id="qq"></div>`;
+    mcq(document.getElementById("qq"),q.w,q.d,pool,()=>next(),false);
+    window.scrollTo(0,0);
+  }
+  next();
+}
+
+/* ---- 4. READ THE AYAH: guess the meaning ---- */
+const ALL_AYAT=LESSONS.flatMap(L=>L.ayat||[]);
+function ayahMcq(stageTitle,promptHtml,options,correct,isArabicOpts,onNext){
+  let html=promptHtml+`<div class="opts">`;
+  options.forEach((o,ix)=>html+=`<button class="opt${isArabicOpts?" ar":""}" data-i="${ix}">${esc(o)}</button>`);
+  html+=`</div>`;
+  app.innerHTML=topbar(stageTitle)+html;
+  let answered=false;
+  document.querySelectorAll(".opt").forEach(b=>{
+    b.onclick=()=>{
+      if(answered)return; answered=true;
+      const ok=options[+b.dataset.i]===correct;
+      if(ok) hit(null,10); else { b.classList.add("bad"); miss(null); }
+      document.querySelectorAll(".opt").forEach(x=>{ if(options[+x.dataset.i]===correct)x.classList.add("good"); x.style.pointerEvents="none"; });
+      setTimeout(onNext, ok?800:1500);
+    };
+  });
+  window.scrollTo(0,0);
+}
+function stepAyahRead(L){
+  let i=0;
+  function next(){
+    if(i>=L.ayat.length){ nextStep(); return; }
+    const A=L.ayat[i++];
+    const others=shuffle(ALL_AYAT.filter(x=>x.t!==A.t)).slice(0,3).map(x=>x.t);
+    const opts=shuffle([A.t].concat(others));
+    const prompt=`<div class="bigar ar" style="font-size:32px;line-height:1.9">${esc(A.a.join(" "))}</div>
+      <p class="q" style="text-align:center">Read the ayah aloud, then guess its meaning:</p>`;
+    ayahMcq(`Read the Ayah (${i} of ${L.ayat.length})`,prompt,opts,A.t,false,next);
+  }
+  next();
+}
+
+/* ---- 5. FILL IN THE BLANK: with the surah and ayah reference ---- */
+function stepAyahBlank(L){
+  let i=0;
+  function next(){
+    if(i>=L.ayat.length){ nextStep(); return; }
+    const A=L.ayat[i++];
+    const idx=A.a.reduce((b,w,ix)=>w.length>A.a[b].length?ix:b,0);
+    const answer=A.a[idx];
+    const shown=A.a.map((w,ix)=>ix===idx?"ـــــــ":w).join(" ");
+    const pool=[...new Set(ALL_AYAT.flatMap(x=>x.a))].filter(w=>w!==answer);
+    const opts=shuffle([answer].concat(shuffle(pool).slice(0,3)));
+    const prompt=`<p class="q" style="text-align:center">Which word completes this ayah? You can look it up: <b style="color:var(--gold2)">Quran ${esc(A.r)}</b></p>
+      <div class="bigar ar" style="font-size:30px;line-height:1.9">${esc(shown)}</div>
+      <p class="q" style="text-align:center;color:var(--mut);font-size:13.5px">“${esc(A.t)}”</p>`;
+    ayahMcq(`Fill in the Blank (${i} of ${L.ayat.length})`,prompt,opts,answer,true,next);
+  }
+  next();
+}
+
+/* ---- 6. AYAH BUILDER ---- */
+function stepAyah(L){
+  let i=0;
+  function next(){
+    if(i>=L.ayat.length){ nextStep(); return; }
+    const A=L.ayat[i++]; buildOne(A,()=>next());
+  }
+  function buildOne(A,done){
+    let tries=0;
+    let poolChips=shuffle(A.a);
+    if(A.a.length>1){ let guard=0; while(poolChips.join("¦")===A.a.join("¦")&&guard++<10) poolChips=shuffle(A.a); }
+    let placed=[];
+    function draw(msgHtml){
+      app.innerHTML=topbar(`Build the Ayah (${i} of ${L.ayat.length})`)+`
+      <p class="q">Arrange the words to form the ayah:<br><b style="color:var(--teal)">“${esc(A.t)}”</b></p>
+      <div class="slots" id="slots">${placed.map((w,ix)=>`<span class="chip" data-ix="${ix}">${esc(w)}</span>`).join("")||"<span style='color:var(--mut);font-size:13px;direction:ltr'>tap words below (right to left)</span>"}</div>
+      <div class="pool" id="pool">${poolChips.map((w,ix)=>`<span class="chip" data-ix="${ix}">${esc(w)}</span>`).join("")}</div>
+      ${msgHtml||""}
+      <div style="text-align:center"><button class="btn" id="chk" ${placed.length===A.a.length?"":"disabled"}>Check</button></div>`;
+      document.querySelectorAll("#pool .chip").forEach(c=>c.onclick=()=>{
+        placed.push(poolChips[+c.dataset.ix]); poolChips.splice(+c.dataset.ix,1); draw();
+      });
+      document.querySelectorAll("#slots .chip").forEach(c=>c.onclick=()=>{
+        poolChips.push(placed[+c.dataset.ix]); placed.splice(+c.dataset.ix,1); draw();
+      });
+      const chk=document.getElementById("chk");
+      if(chk) chk.onclick=()=>{
+        if(placed.join("¦")===A.a.join("¦")){
+          const pts=tries===0?25:10;
+          award(pts,"Ayah!");
+          app.innerHTML=topbar("Build the Ayah")+`
+            <div class="bigar ar" style="font-size:34px;line-height:1.9">${esc(A.a.join(" "))}</div>
+            <div class="ayah-res good">✔ “${esc(A.t)}” <span class="ref">Quran ${esc(A.r)}</span></div>
+            <div style="text-align:center"><button class="btn" id="go">Continue ➜</button></div>`;
+          document.getElementById("go").onclick=done;
+        }else{
+          tries++; sess.mistakes++;
+          if(tries>=2){
+            app.innerHTML=topbar("Build the Ayah")+`
+              <div class="bigar ar" style="font-size:34px;line-height:1.9">${esc(A.a.join(" "))}</div>
+              <div class="ayah-res bad">The correct order is shown above.<br>“${esc(A.t)}” <span class="ref">Quran ${esc(A.r)}</span></div>
+              <div style="text-align:center"><button class="btn" id="go">Continue ➜</button></div>`;
+            document.getElementById("go").onclick=done;
+          }else{
+            poolChips=poolChips.concat(placed); placed=[];
+            draw(`<div class="ayah-res bad">Not quite. Try once more!</div>`);
+          }
+        }
+      };
+      window.scrollTo(0,0);
+    }
+    draw();
+  }
+  next();
+}
+
+/* ---- 5. BOSS (timed, includes earlier lessons) ---- */
+function stepBoss(L){
+  const cur=L.words.length?L.words:poolUpTo(L.n-1);
+  const prev=poolUpTo(Math.max(1,L.n-1));
+  const qs=shuffle(cur).slice(0,5).concat(shuffle(prev).slice(0,3)).map((w,i)=>({w,d:i%2===0}));
+  const total=qs.length; let i=0, right=0;
+  sess.bossTotal=total;
+  function next(){
+    if(i>=total){ sess.bossRight=right; nextStep(); return; }
+    const q=qs[i++];
+    app.innerHTML=topbar(`Boss Round (${i} of ${total})`)+`<div id="qq"></div>`;
+    mcq(document.getElementById("qq"),q.w,q.d,prev.concat(cur),(ok)=>{ if(ok)right++; next(); },true);
+    window.scrollTo(0,0);
+  }
+  next();
+}
+
+/* ---- finish ---- */
+function finishLesson(){
+  const L=sess.L;
+  const frac=sess.bossTotal?sess.bossRight/sess.bossTotal:1;
+  let stars=1;
+  if(sess.mistakes===0&&frac===1) stars=3;
+  else if(sess.mistakes<=3&&frac>=0.75) stars=2;
+  const bonus=stars*25;
+  S.thawab+=bonus;
+  if(!S.stars[L.n]||S.stars[L.n]<stars) S.stars[L.n]=stars;
+  save(); header();
+  const nxt=L.n<20?LESSONS[L.n]:null;
+  const starHint=stars===3?"":`<p class="sub" style="margin-top:6px;font-size:12.5px">2 stars: finish with 3 mistakes or fewer · 3 stars: no mistakes and a perfect Boss Round. Replay the lesson any time to improve it.</p>`;
+  app.innerHTML=`<div class="end">
+    <div class="big">${"★".repeat(stars)}</div>
+    <h2>Lesson ${L.n} complete!</h2>
+    <div class="gain">You earned ${stars} of 3 stars</div>
+    <div class="gain">+${sess.earned} thawab earned · +${bonus} star bonus</div>
+    <p class="sub" style="margin-top:10px">${sess.mistakes===0?"No mistakes at all. May it be written in your scale of good deeds!":"Mistakes: "+sess.mistakes+". Those words will come back in Daily Revision."}</p>
+    ${starHint}
+    ${nxt?`<button class="btn" onclick="startLesson(${nxt.n})">Next: Lesson ${nxt.n} ➜</button>`:`<p class="gain">You have completed the whole journey!</p>`}
+    <br><button class="btn ghost" onclick="renderMap()">Back to map</button>
+  </div>`;
+  window.scrollTo(0,0);
+}
+
+/* ================= UNLOCK TEST (skip ahead) ================= */
+function startUnlockTest(n){
+  app.innerHTML=`<div class="topline"><span class="back" onclick="renderMap()">← Back to Map</span><span></span></div>
+  <div class="end" style="margin-top:14px">
+    <div class="hlabel" style="letter-spacing:2px">Skip ahead</div>
+    <h2>Unlock Lesson ${n}?</h2>
+    <p class="sub" style="margin-top:10px">Already studied lessons 1 to ${n-1} in the book, or played on another browser or device?<br><br>
+    Answer 10 questions from those lessons. Get 8 or more right and every lesson up to Lesson ${n} unlocks. There is no penalty for trying, and you can retake it any time.</p>
+    <button class="btn" onclick="runUnlockTest(${n})">Start the test</button><br>
+    <button class="btn ghost" onclick="renderMap()">Not now</button>
+  </div>`;
+  window.scrollTo(0,0);
+}
+function runUnlockTest(n){
+  const pool=poolUpTo(n-1);
+  const qs=shuffle(pool).slice(0,10).map((w,i)=>({w,d:i%2===0}));
+  sess={L:{n:"T",title:"Unlock test"},steps:[()=>{}],idx:1,mistakes:0,earned:0,streak:0};
+  let i=0,right=0;
+  function next(){
+    if(i>=qs.length){
+      if(right>=8){
+        S.unlockedTo=Math.max(S.unlockedTo||1,n); save();
+        app.innerHTML=`<div class="end"><div class="big" style="color:var(--good)">✓</div><h2>Unlocked!</h2>
+        <div class="gain">${right} / ${qs.length} correct. Lessons up to ${n} are now open.</div>
+        <button class="btn" onclick="startLesson(${n})">Play Lesson ${n} ➜</button><br>
+        <button class="btn ghost" onclick="renderMap()">Back to map</button></div>`;
+      }else{
+        app.innerHTML=`<div class="end"><h2>Not yet</h2>
+        <p class="sub" style="margin-top:10px">${right} / ${qs.length} correct; you need 8. Some earlier words still need practice, and they will make the later lessons much easier. Play a lesson or two, then try again whenever you like.</p>
+        <button class="btn" onclick="renderMap()">Back to map</button></div>`;
+      }
+      window.scrollTo(0,0); return;
+    }
+    const q=qs[i++];
+    app.innerHTML=`<div class="topline"><span class="back" onclick="renderMap()">← Back to Map</span><span></span></div>
+      <div class="stage">Unlock test (${i} of ${qs.length})</div><div id="qq"></div>`;
+    mcq(document.getElementById("qq"),q.w,q.d,pool,(ok)=>{if(ok)right++;next()},false);
+    window.scrollTo(0,0);
+  }
+  next();
+}
+
+/* ================= DAILY REVISION ================= */
+function startRevision(){
+  // words from lessons the player completed (starred) or proved in an unlock test
+  let pool=[];
+  LESSONS.forEach(L=>{ if(S.stars[L.n] || L.n<(S.unlockedTo||1)) pool=pool.concat(L.words); });
+  pool=pool.filter(w=>w[1]);
+  if(!pool.length){ renderMap(); return; }
+  const ranked=pool.slice().sort((a,b)=>{
+    const sa=S.words[a[0]]||{c:0,w:0}, sb=S.words[b[0]]||{c:0,w:0};
+    return (sb.w-sb.c)-(sa.w-sa.c) || (sa.c+sa.w)-(sb.c+sb.w);
+  });
+  const qs=shuffle(ranked.slice(0,15)).slice(0,10).map((w,i)=>({w,d:i%2===0}));
+  sess={L:{n:"R",title:"Revision"},steps:[()=>{}],idx:1,mistakes:0,earned:0,streak:0};
+  let i=0,right=0;
+  function next(){
+    if(i>=qs.length){
+      const bonus=right===qs.length?30:0; if(bonus){S.thawab+=bonus;save();header();}
+      app.innerHTML=`<div class="end"><div class="big" style="color:var(--good)">✓</div><h2>Revision complete</h2>
+      <div class="gain">+${sess.earned+bonus} thawab ${bonus?"(perfect bonus!)":""}</div>
+      <p class="sub" style="margin-top:10px">${right} / ${qs.length} correct. Reviewing a little every day is how the words settle into the heart.</p>
+      <button class="btn" onclick="renderMap()">Back to map</button></div>`;
+      return;
+    }
+    const q=qs[i++];
+    app.innerHTML=`<div class="topline"><span class="back" onclick="renderMap()">← Back to Map</span><span></span></div>
+      <div class="stage">Daily Revision (${i} of ${qs.length})</div><div id="qq"></div>`;
+    mcq(document.getElementById("qq"),q.w,q.d,pool,(ok)=>{if(ok)right++;next()},false);
+    window.scrollTo(0,0);
+  }
+  next();
+}
+
+renderMap();
+</script>
+</body>
+</html>
