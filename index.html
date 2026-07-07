@@ -24,11 +24,12 @@ body{
 .ar{font-family:'Amiri',serif; direction:rtl}
 #wrap{max-width:560px; margin:0 auto; padding:0 14px 60px}
 header{
-  position:sticky; top:0; z-index:10; display:flex; justify-content:space-between; align-items:center;
-  padding:12px 4px; background:rgba(255,255,255,.96); backdrop-filter:blur(6px);
-  border-bottom:1px solid var(--line);
+  position:sticky; top:10px; z-index:10; display:flex; justify-content:space-between; align-items:center;
+  flex-wrap:wrap; gap:8px; margin:14px 0 6px; padding:16px 18px; border-radius:16px;
+  background:linear-gradient(135deg,#14707f,#2ca4ab);
+  box-shadow:0 4px 14px rgba(20,112,127,.28);
 }
-header .brand{font-weight:800; font-size:15px; color:var(--gold2); letter-spacing:.4px}
+header .brand{font-weight:800; font-size:18px; color:#ffffff; letter-spacing:.4px}
 header .stats{display:flex; gap:8px; font-weight:800; font-size:13px}
 header .stats span{
   display:inline-flex; align-items:center; gap:6px;
@@ -476,7 +477,7 @@ function renderMap(){
   const covText=occ>0
     ? `The words you have studied appear about ${occ.toLocaleString()} times across the Quran's ~77,000 words. You will recognise roughly 1 in every ${Math.max(2,Math.round(QURAN_WORDS/occ))} words you read.`
     : `Finish your first lesson and this bar will show how much of the Quran's text is made of words you have studied.`;
-  let h=`<h1>The Journey · رحلة الكلمات</h1>
+  let h=`<h1>The Journey of the Words · رحلة الكلمات</h1>
   <p class="sub">Learn the words of the Quran lesson by lesson. Earn <b style="color:var(--gold2)">thawab</b> for every word you master.</p>
   <div class="cres-card">
     <div class="hlabel">Quran word coverage</div>
@@ -494,7 +495,7 @@ function renderMap(){
   <details class="howto"><summary>How the game works</summary>
     <div class="hsec"><div class="hlabel">Lesson flow · 7 stages</div><div class="htxt">
       <div class="hsteps"><span>1. Learn</span><span>2. Match</span><span>3. Quiz</span><span>4. Read</span><span>5. Fill</span><span>6. Build</span><span>7. Boss</span></div>
-      Learn the new words, match the pairs, then a quiz. Next come three ayat games: Read (guess the ayah's meaning), Fill (complete its missing word using the surah and verse reference) and Build (arrange the scrambled words). The Boss Round is timed and brings back earlier words. Key lessons (6, 13, 15, 17, 19) open with an extra card explaining that lesson's grammar key, and checkpoint lessons (5, 12) replace stages 1 to 3 with one review quiz.</div></div>
+      Learn the new words, match the pairs, then a quiz. Next come three ayat games: Read (guess the ayah's meaning), Fill (complete its missing word using the surah and verse reference) and Build (arrange the scrambled words). The Boss Round is timed and brings back earlier words. A few lessons are a little different: lessons 6, 13, 15, 17 and 19 begin with one simple grammar rule that unlocks many words at once, and lessons 5 and 12 have no new words at all; they are revision lessons that test everything learned so far.</div></div>
     <div class="hsec"><div class="hlabel">Thawab points</div><div class="htxt">
       Matched pair 5 · quiz answer 10 · boss answer 10 · ayah built on the first try 25.<br>
       <span class="hpill">3 correct in a row: points double</span><span class="hpill">6 in a row: points triple</span><br>
