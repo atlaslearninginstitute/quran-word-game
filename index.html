@@ -511,7 +511,7 @@ function renderMap(){
     .reduce((s,L)=>s+L.words.reduce((a,w)=>a+(w[2]||0),0),0);
   const covPct=Math.min(100,occ/QURAN_WORDS*100);
   const covText=occ>0
-    ? `The words you have studied appear about ${occ.toLocaleString()} times across the Quran's ~77,000 words. You will recognise roughly 1 in every ${Math.max(2,Math.round(QURAN_WORDS/occ))} words you read.`
+    ? `The words you have studied appear about <b>${occ.toLocaleString()}</b> times across the Quran's <b>~77,000</b> words. You will recognise roughly <b>1 in every ${Math.max(2,Math.round(QURAN_WORDS/occ))}</b> words you read.`
     : `Finish your first lesson and this bar will show how much of the Quran's text is made of words you have studied.`;
   let h=`<h1>The Journey of the Words · رحلة الكلمات</h1>
   <p class="sub">Learn the words of the Quran lesson by lesson. Earn <b style="color:var(--gold2)">thawab</b> for every word you master.</p>`;
